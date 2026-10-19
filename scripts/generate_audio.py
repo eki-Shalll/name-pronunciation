@@ -6,10 +6,9 @@ from kokoro import KPipeline
 OUT = Path("audio/yijun-liu.wav")
 OUT.parent.mkdir(parents=True, exist_ok=True)
 
-# American-English voice, with explicit phoneme hints so the pronunciation is stable.
-# Yijun is intentionally approximated as "ee-June" for English-speaking listeners.
-# Mandarin Liu is closer to one syllable /ljoʊ/ than to English "Leo" /ˈliːoʊ/.
-text = "[Yijun](/iː dʒuːn/) [Liu](/ljoʊ/)"
+# Use an English-friendly approximation for the name in the public page/audio.
+# Yijun -> "ee-June"; Liu -> "Leo" for immediate readability to English speakers.
+text = "[Yijun](/iː dʒuːn/) [Liu](/ˈliːoʊ/)"
 
 pipeline = KPipeline(lang_code="a")
 parts = []
