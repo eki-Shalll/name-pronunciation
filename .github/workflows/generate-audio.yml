@@ -25,8 +25,8 @@ jobs:
       - name: Install system dependency
         run: sudo apt-get update && sudo apt-get install -y espeak-ng
 
-      - name: Install Kokoro
-        run: pip install "kokoro>=0.9.4" soundfile numpy
+      - name: Install Kokoro and Mandarin dependencies
+        run: pip install "kokoro>=0.9.4" "misaki[zh]>=0.9.4" soundfile numpy ordered-set
 
       - name: Generate fixed WAV files
         run: python scripts/generate_audio.py
