@@ -25,17 +25,17 @@ jobs:
       - name: Install system dependency
         run: sudo apt-get update && sudo apt-get install -y espeak-ng
 
-      - name: Install Kokoro and Mandarin dependencies
-        run: pip install "kokoro>=0.9.4" "misaki[zh]>=0.9.4" soundfile numpy ordered-set
+      - name: Install Kokoro
+        run: pip install "kokoro>=0.9.4" soundfile numpy
 
-      - name: Generate fixed WAV files
+      - name: Generate fixed WAV
         run: python scripts/generate_audio.py
 
       - name: Commit generated audio
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add audio/*.wav
+          git add audio/yijun-liu.wav
           if git diff --cached --quiet; then
             echo "Audio unchanged"
           else
