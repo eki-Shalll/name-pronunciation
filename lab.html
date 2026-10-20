@@ -3,266 +3,331 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Interactive pronunciation lab for Yijun Liu" />
-  <title>Yijun Liu — Pronunciation Lab</title>
+  <meta name="description" content="Interactive Kokoro pronunciation lab for Yijun Liu" />
+  <title>Yijun Liu — Kokoro Pronunciation Lab</title>
   <style>
     :root {
       color-scheme: light dark;
-      --bg: #f7f7f5;
-      --card: #ffffff;
-      --text: #171717;
-      --muted: #666666;
-      --border: #ddddda;
-      --button: #ba0c2f;
-      --button-hover: #9b0a27;
-      --button-text: #ffffff;
-      --soft: #f1f1ef;
+      --bg:#f7f7f5; --card:#fff; --text:#171717; --muted:#666;
+      --border:#ddddda; --button:#ba0c2f; --button-hover:#9b0a27;
+      --button-text:#fff; --soft:#f1f1ef; --ok:#2e7d32;
     }
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #141414;
-        --card: #1d1d1d;
-        --text: #f3f3f3;
-        --muted: #b3b3b3;
-        --border: #3a3a3a;
-        --button: #d51b46;
-        --button-hover: #e52b55;
-        --button-text: #ffffff;
-        --soft: #282828;
+        --bg:#141414; --card:#1d1d1d; --text:#f3f3f3; --muted:#b3b3b3;
+        --border:#3a3a3a; --button:#d51b46; --button-hover:#e52b55;
+        --button-text:#fff; --soft:#282828; --ok:#81c784;
       }
     }
-    * { box-sizing: border-box; }
+    * { box-sizing:border-box; }
     body {
-      margin: 0;
-      min-height: 100vh;
-      padding: 28px 16px;
-      background: var(--bg);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin:0; min-height:100vh; padding:28px 16px; background:var(--bg); color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     }
-    .wrap { width: min(100%, 680px); margin: 0 auto; }
+    .wrap { width:min(100%,720px); margin:0 auto; }
     .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 30px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.06);
+      background:var(--card); border:1px solid var(--border); border-radius:18px;
+      padding:30px; box-shadow:0 10px 30px rgba(0,0,0,.06);
     }
-    h1 { margin: 0 0 6px; font-size: clamp(2rem, 7vw, 2.8rem); letter-spacing: -.03em; }
-    .sub { margin: 0 0 26px; color: var(--muted); line-height: 1.5; }
-    .grid { display: grid; gap: 18px; }
-    .field { display: grid; gap: 7px; }
-    label { font-size: .92rem; font-weight: 600; }
+    h1 { margin:0 0 6px; font-size:clamp(2rem,7vw,2.8rem); letter-spacing:-.03em; }
+    .sub { margin:0 0 24px; color:var(--muted); line-height:1.5; }
+    .grid { display:grid; gap:18px; }
+    .field { display:grid; gap:7px; }
+    label { font-size:.92rem; font-weight:650; }
     input[type="text"], select {
-      width: 100%;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 11px 12px;
-      font: inherit;
-      background: var(--card);
-      color: var(--text);
+      width:100%; border:1px solid var(--border); border-radius:12px; padding:11px 12px;
+      font:inherit; background:var(--card); color:var(--text);
     }
-    .presets { display: flex; flex-wrap: wrap; gap: 8px; }
+    .presets { display:flex; flex-wrap:wrap; gap:8px; }
     .chip {
-      border: 1px solid var(--border);
-      background: var(--soft);
-      color: var(--text);
-      border-radius: 999px;
-      padding: 8px 12px;
-      font: inherit;
-      cursor: pointer;
+      border:1px solid var(--border); background:var(--soft); color:var(--text);
+      border-radius:999px; padding:8px 12px; font:inherit; cursor:pointer;
     }
-    .sliders { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .slider-row { display: grid; gap: 6px; }
-    input[type="range"] { width: 100%; }
-    .value { color: var(--muted); font-weight: 500; }
-    .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-    .primary, .secondary {
-      border-radius: 999px;
-      padding: 11px 17px;
-      font: inherit;
-      font-weight: 650;
-      cursor: pointer;
+    .slider-row { display:grid; gap:6px; }
+    input[type="range"] { width:100%; }
+    .value { color:var(--muted); font-weight:500; }
+    .actions { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+    button.primary, button.secondary {
+      border-radius:999px; padding:11px 17px; font:inherit; font-weight:650; cursor:pointer;
     }
-    .primary { border: 0; background: var(--button); color: var(--button-text); }
-    .primary:hover { background: var(--button-hover); }
-    .secondary { border: 1px solid var(--border); background: transparent; color: var(--text); }
-    .toggle { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); font-size: .9rem; }
-    .result {
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px;
-      background: var(--soft);
-      color: var(--muted);
-      font-size: .86rem;
-      line-height: 1.45;
-      word-break: break-word;
+    .primary { border:0; background:var(--button); color:var(--button-text); }
+    .primary:hover { background:var(--button-hover); }
+    .secondary { border:1px solid var(--border); background:transparent; color:var(--text); }
+    button:disabled { opacity:.55; cursor:not-allowed; }
+    .status, .summary {
+      border:1px solid var(--border); border-radius:12px; padding:12px; background:var(--soft);
+      color:var(--muted); font-size:.86rem; line-height:1.45; word-break:break-word;
     }
-    .reference {
-      margin-top: 24px;
-      padding-top: 20px;
-      border-top: 1px solid var(--border);
-    }
-    audio { width: 100%; margin-top: 8px; }
-    .note { margin: 8px 0 0; color: var(--muted); font-size: .82rem; line-height: 1.45; }
-    @media (max-width: 560px) { .sliders { grid-template-columns: 1fr; } .card { padding: 24px 20px; } }
+    .status.ok { color:var(--ok); }
+    .progress-wrap { display:grid; gap:6px; }
+    .progress-head { display:flex; justify-content:space-between; gap:12px; color:var(--muted); font-size:.82rem; }
+    .progress-track { height:8px; overflow:hidden; border-radius:999px; background:var(--border); }
+    .progress-fill { height:100%; width:0%; background:var(--button); transition:width .15s ease; }
+    audio { width:100%; }
+    .reference { margin-top:24px; padding-top:20px; border-top:1px solid var(--border); display:grid; gap:8px; }
+    .note { margin:0; color:var(--muted); font-size:.82rem; line-height:1.5; }
+    code { font-family:ui-monospace,SFMono-Regular,Consolas,monospace; }
+    @media (max-width:560px) { .card { padding:24px 20px; } }
   </style>
 </head>
 <body>
   <div class="wrap">
     <main class="card">
-      <h1>Pronunciation Lab</h1>
-      <p class="sub">Use an American English voice on your own device and tune the spelling, speed, and pitch instantly. This page is only for testing; it does not change the public pronunciation automatically.</p>
+      <h1>Kokoro Pronunciation Lab</h1>
+      <p class="sub">This page runs Kokoro locally in your browser. You can change the spelling, American voice, and model speed, then generate the exact voice you are testing.</p>
 
       <div class="grid">
         <div class="field">
-          <label for="spokenText">What the American voice should read</label>
-          <input id="spokenText" type="text" value="E JUNE Leo" autocomplete="off" spellcheck="false" />
+          <label for="spokenText">Text sent to Kokoro</label>
+          <input id="spokenText" type="text" value="Yijun Liou" autocomplete="off" spellcheck="false" />
           <div class="presets">
-            <button class="chip" type="button" data-text="E JUNE Leo">E JUNE Leo</button>
-            <button class="chip" type="button" data-text="EE JUNE Leo">EE JUNE Leo</button>
-            <button class="chip" type="button" data-text="E June Leo">E June Leo</button>
-            <button class="chip" type="button" data-text="Yi JUNE Leo">Yi JUNE Leo</button>
-            <button class="chip" type="button" data-text="Yee JUNE Leo">Yee JUNE Leo</button>
+            <button class="chip" type="button" data-text="Yijun Liou">Yijun Liou</button>
+            <button class="chip" type="button" data-text="Yijun Liu">Yijun Liu</button>
+            <button class="chip" type="button" data-text="Yijun Leo">Yijun Leo</button>
+            <button class="chip" type="button" data-text="Yi Jun Liou">Yi Jun Liou</button>
           </div>
         </div>
 
         <div class="field">
-          <label for="voice">Voice</label>
-          <select id="voice"></select>
+          <label for="voice">Kokoro American voice</label>
+          <select id="voice">
+            <option value="af_heart">af_heart — Heart</option>
+            <option value="af_bella">af_bella — Bella</option>
+            <option value="af_nicole">af_nicole — Nicole</option>
+            <option value="af_aoede">af_aoede — Aoede</option>
+            <option value="af_kore">af_kore — Kore</option>
+            <option value="af_sarah">af_sarah — Sarah</option>
+            <option value="af_nova">af_nova — Nova</option>
+            <option value="af_sky">af_sky — Sky</option>
+            <option value="af_alloy">af_alloy — Alloy</option>
+            <option value="af_jessica">af_jessica — Jessica</option>
+            <option value="af_river">af_river — River</option>
+            <option value="am_michael">am_michael — Michael</option>
+            <option value="am_fenrir">am_fenrir — Fenrir</option>
+            <option value="am_puck">am_puck — Puck</option>
+            <option value="am_echo">am_echo — Echo</option>
+            <option value="am_eric">am_eric — Eric</option>
+            <option value="am_liam">am_liam — Liam</option>
+            <option value="am_onyx">am_onyx — Onyx</option>
+            <option value="am_adam">am_adam — Adam</option>
+          </select>
         </div>
 
-        <div class="sliders">
-          <div class="slider-row">
-            <label for="rate">Speed <span class="value" id="rateValue">0.85×</span></label>
-            <input id="rate" type="range" min="0.60" max="1.20" step="0.05" value="0.85" />
-          </div>
-          <div class="slider-row">
-            <label for="pitch">Pitch <span class="value" id="pitchValue">1.00</span></label>
-            <input id="pitch" type="range" min="0.70" max="1.30" step="0.05" value="1.00" />
-          </div>
+        <div class="slider-row">
+          <label for="speed">Kokoro generation speed <span class="value" id="speedValue">0.85×</span></label>
+          <input id="speed" type="range" min="0.65" max="1.20" step="0.05" value="0.85" />
         </div>
 
         <div class="actions">
-          <button id="speak" class="primary" type="button">🔊 Preview</button>
-          <button id="stop" class="secondary" type="button">Stop</button>
+          <button id="load" class="secondary" type="button">Load Kokoro</button>
+          <button id="generate" class="primary" type="button">Generate &amp; Preview</button>
           <button id="copy" class="secondary" type="button">Copy settings</button>
-          <label class="toggle"><input id="auto" type="checkbox" /> Auto preview</label>
         </div>
 
-        <div id="summary" class="result"></div>
+        <div id="progressWrap" class="progress-wrap" hidden>
+          <div class="progress-head"><span id="progressFile">Downloading model…</span><span id="progressPct">0%</span></div>
+          <div class="progress-track"><div id="progressFill" class="progress-fill"></div></div>
+        </div>
+
+        <div id="status" class="status">Kokoro is not loaded yet. The first load downloads the quantized model (roughly 86 MB) and your browser can cache it for later visits.</div>
+
+        <audio id="player" controls preload="none"></audio>
+        <div id="summary" class="summary"></div>
       </div>
 
       <div class="reference">
-        <label>Current fixed AI recording for comparison</label>
+        <label>Current fixed recording for comparison</label>
         <audio controls preload="metadata" src="audio/yijun-liu.wav"></audio>
-        <p class="note">The live preview above uses your browser/OS speech engine, so it responds immediately. Once you find a version you like, copy the settings and send them back to me; I can use that as the target for the fixed recording.</p>
+        <p class="note">The Kokoro preview above is the same model family used for the fixed recording. Unlike the old lab, it does not use Microsoft/Windows speech voices. Pitch is not exposed as an independent Kokoro control; changing the Kokoro voice is the main way to change timbre and pitch character.</p>
       </div>
     </main>
   </div>
 
-  <script>
+  <script type="module">
+    import { KokoroTTS } from "https://cdn.jsdelivr.net/npm/kokoro-js@1.2.1/+esm";
+
+    const MODEL_ID = "onnx-community/Kokoro-82M-v1.0-ONNX";
+    const MODEL_OPTIONS = { dtype: "q8", device: "wasm" };
+
     const text = document.getElementById('spokenText');
-    const voiceSelect = document.getElementById('voice');
-    const rate = document.getElementById('rate');
-    const pitch = document.getElementById('pitch');
-    const rateValue = document.getElementById('rateValue');
-    const pitchValue = document.getElementById('pitchValue');
-    const auto = document.getElementById('auto');
+    const voice = document.getElementById('voice');
+    const speed = document.getElementById('speed');
+    const speedValue = document.getElementById('speedValue');
+    const loadButton = document.getElementById('load');
+    const generateButton = document.getElementById('generate');
+    const copyButton = document.getElementById('copy');
+    const player = document.getElementById('player');
+    const status = document.getElementById('status');
     const summary = document.getElementById('summary');
-    let voices = [];
-    let timer = null;
+    const progressWrap = document.getElementById('progressWrap');
+    const progressFile = document.getElementById('progressFile');
+    const progressPct = document.getElementById('progressPct');
+    const progressFill = document.getElementById('progressFill');
 
-    function loadVoices() {
-      const all = speechSynthesis.getVoices();
-      voices = all.sort((a, b) => {
-        const aUS = a.lang.toLowerCase() === 'en-us' ? 0 : 1;
-        const bUS = b.lang.toLowerCase() === 'en-us' ? 0 : 1;
-        if (aUS !== bUS) return aUS - bUS;
-        const aEN = a.lang.toLowerCase().startsWith('en') ? 0 : 1;
-        const bEN = b.lang.toLowerCase().startsWith('en') ? 0 : 1;
-        if (aEN !== bEN) return aEN - bEN;
-        return a.name.localeCompare(b.name);
-      });
-
-      const previous = voiceSelect.value;
-      voiceSelect.innerHTML = '';
-      voices.forEach((v, i) => {
-        const option = document.createElement('option');
-        option.value = String(i);
-        option.textContent = `${v.name} — ${v.lang}${v.default ? ' (default)' : ''}`;
-        voiceSelect.appendChild(option);
-      });
-
-      const preferredIndex = voices.findIndex(v => v.lang.toLowerCase() === 'en-us' && /Microsoft|Samantha|Google|English/i.test(v.name));
-      if (previous && voices[Number(previous)]) voiceSelect.value = previous;
-      else if (preferredIndex >= 0) voiceSelect.value = String(preferredIndex);
-      else if (voices.length) voiceSelect.value = '0';
-      updateSummary();
-    }
-
-    function selectedVoice() {
-      return voices[Number(voiceSelect.value)] || null;
-    }
+    let ttsPromise = null;
+    let tts = null;
+    let currentBlobUrl = null;
+    const filesLoading = new Set();
 
     function updateSummary() {
-      rateValue.textContent = `${Number(rate.value).toFixed(2)}×`;
-      pitchValue.textContent = Number(pitch.value).toFixed(2);
-      const v = selectedVoice();
-      summary.textContent = `Text: ${text.value} | Voice: ${v ? `${v.name} (${v.lang})` : 'default'} | Speed: ${rate.value} | Pitch: ${pitch.value}`;
+      speedValue.textContent = `${Number(speed.value).toFixed(2)}×`;
+      const selected = voice.options[voice.selectedIndex];
+      summary.textContent = `Text: ${text.value} | Voice: ${selected ? selected.textContent : voice.value} | Speed: ${Number(speed.value).toFixed(2)} | Model: Kokoro-82M v1.0 q8 / WASM`;
     }
 
-    function speak() {
-      if (!('speechSynthesis' in window)) {
-        summary.textContent = 'Speech synthesis is not available in this browser.';
+    function setStatus(message, ok = false) {
+      status.textContent = message;
+      status.classList.toggle('ok', ok);
+    }
+
+    function onProgress(data) {
+      if (data?.status === 'progress' && data.file) {
+        filesLoading.add(data.file);
+        progressWrap.hidden = false;
+        const pct = typeof data.progress === 'number'
+          ? data.progress
+          : data.total ? (data.loaded / data.total) * 100 : 0;
+        progressFile.textContent = data.file.split('/').pop();
+        progressPct.textContent = `${Math.round(pct)}%`;
+        progressFill.style.width = `${Math.max(0, Math.min(100, pct))}%`;
+      } else if (data?.status === 'done' && data.file) {
+        filesLoading.delete(data.file);
+        if (filesLoading.size === 0) {
+          progressFill.style.width = '100%';
+          progressPct.textContent = '100%';
+          setTimeout(() => { progressWrap.hidden = true; }, 450);
+        }
+      }
+    }
+
+    function repopulateVoices(instance) {
+      if (!instance?.voices) return;
+      const entries = Object.entries(instance.voices)
+        .filter(([id, meta]) => id.startsWith('af_') || id.startsWith('am_') || meta?.language === 'en-US')
+        .sort(([a], [b]) => a.localeCompare(b));
+      if (!entries.length) return;
+      const previous = voice.value;
+      voice.innerHTML = '';
+      for (const [id, meta] of entries) {
+        const option = document.createElement('option');
+        option.value = id;
+        const bits = [id];
+        if (meta?.name) bits.push(meta.name);
+        if (meta?.gender) bits.push(meta.gender);
+        option.textContent = bits.join(' — ');
+        voice.appendChild(option);
+      }
+      if ([...voice.options].some(o => o.value === previous)) voice.value = previous;
+      else if ([...voice.options].some(o => o.value === 'af_heart')) voice.value = 'af_heart';
+      updateSummary();
+    }
+
+    async function loadKokoro() {
+      if (tts) return tts;
+      if (ttsPromise) return ttsPromise;
+
+      loadButton.disabled = true;
+      generateButton.disabled = true;
+      setStatus('Loading Kokoro. First use may take a little while because the model is being downloaded…');
+
+      ttsPromise = KokoroTTS.from_pretrained(MODEL_ID, {
+        ...MODEL_OPTIONS,
+        progress_callback: onProgress,
+      }).then(instance => {
+        tts = instance;
+        repopulateVoices(instance);
+        setStatus('Kokoro loaded. Change the text, voice, or speed and press Generate & Preview.', true);
+        loadButton.textContent = 'Kokoro loaded';
+        return instance;
+      }).catch(error => {
+        ttsPromise = null;
+        setStatus(`Kokoro load failed: ${error?.message || error}`);
+        throw error;
+      }).finally(() => {
+        loadButton.disabled = !!tts;
+        generateButton.disabled = false;
+      });
+
+      return ttsPromise;
+    }
+
+    function rawAudioToWav(rawAudio) {
+      const sr = rawAudio.sampling_rate ?? 24000;
+      const samples = rawAudio.audio;
+      const buffer = new ArrayBuffer(44 + samples.length * 2);
+      const view = new DataView(buffer);
+      const write = (offset, s) => { for (let i = 0; i < s.length; i++) view.setUint8(offset + i, s.charCodeAt(i)); };
+      write(0, 'RIFF'); view.setUint32(4, 36 + samples.length * 2, true); write(8, 'WAVEfmt ');
+      view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
+      view.setUint32(24, sr, true); view.setUint32(28, sr * 2, true);
+      view.setUint16(32, 2, true); view.setUint16(34, 16, true);
+      write(36, 'data'); view.setUint32(40, samples.length * 2, true);
+      for (let i = 0; i < samples.length; i++) {
+        const x = Math.max(-1, Math.min(1, samples[i]));
+        view.setInt16(44 + i * 2, x < 0 ? x * 0x8000 : x * 0x7fff, true);
+      }
+      return new Blob([buffer], { type: 'audio/wav' });
+    }
+
+    async function generate() {
+      const phrase = text.value.trim();
+      if (!phrase) {
+        setStatus('Enter text for Kokoro to read.');
         return;
       }
-      speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text.value.trim());
-      const v = selectedVoice();
-      if (v) u.voice = v;
-      u.lang = v?.lang || 'en-US';
-      u.rate = Number(rate.value);
-      u.pitch = Number(pitch.value);
-      u.volume = 1;
-      speechSynthesis.speak(u);
-      updateSummary();
+
+      generateButton.disabled = true;
+      const original = generateButton.textContent;
+      generateButton.textContent = 'Generating…';
+      try {
+        const engine = await loadKokoro();
+        setStatus(`Generating with ${voice.value} at ${Number(speed.value).toFixed(2)}×…`);
+        const started = performance.now();
+        const audio = await engine.generate(phrase, {
+          voice: voice.value,
+          speed: Number(speed.value),
+        });
+        const blob = audio.toBlob ? audio.toBlob() : rawAudioToWav(audio);
+        if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+        currentBlobUrl = URL.createObjectURL(blob);
+        player.src = currentBlobUrl;
+        player.playbackRate = 1;
+        await player.play();
+        const elapsed = ((performance.now() - started) / 1000).toFixed(1);
+        setStatus(`Ready. Kokoro generated this preview in ${elapsed} s.`, true);
+      } catch (error) {
+        console.error(error);
+        setStatus(`Generation failed: ${error?.message || error}`);
+      } finally {
+        generateButton.disabled = false;
+        generateButton.textContent = original;
+        updateSummary();
+      }
     }
 
-    function maybeAuto() {
-      updateSummary();
-      if (!auto.checked) return;
-      clearTimeout(timer);
-      timer = setTimeout(speak, 350);
-    }
+    loadButton.addEventListener('click', () => loadKokoro().catch(() => {}));
+    generateButton.addEventListener('click', generate);
+    speed.addEventListener('input', updateSummary);
+    voice.addEventListener('change', updateSummary);
+    text.addEventListener('input', updateSummary);
 
-    document.getElementById('speak').addEventListener('click', speak);
-    document.getElementById('stop').addEventListener('click', () => speechSynthesis.cancel());
-    document.getElementById('copy').addEventListener('click', async () => {
+    document.querySelectorAll('.chip').forEach(button => {
+      button.addEventListener('click', () => {
+        text.value = button.dataset.text;
+        updateSummary();
+      });
+    });
+
+    copyButton.addEventListener('click', async () => {
       updateSummary();
       try {
         await navigator.clipboard.writeText(summary.textContent);
-        const old = document.getElementById('copy').textContent;
-        document.getElementById('copy').textContent = 'Copied';
-        setTimeout(() => document.getElementById('copy').textContent = old, 1000);
+        const old = copyButton.textContent;
+        copyButton.textContent = 'Copied';
+        setTimeout(() => { copyButton.textContent = old; }, 900);
       } catch (_) {}
     });
 
-    document.querySelectorAll('.chip').forEach(btn => {
-      btn.addEventListener('click', () => {
-        text.value = btn.dataset.text;
-        maybeAuto();
-      });
-    });
-
-    for (const el of [text, voiceSelect, rate, pitch]) {
-      el.addEventListener(el === text ? 'input' : 'change', maybeAuto);
-      if (el === rate || el === pitch) el.addEventListener('input', maybeAuto);
-    }
-
-    auto.addEventListener('change', () => { if (auto.checked) speak(); });
-    speechSynthesis.onvoiceschanged = loadVoices;
-    loadVoices();
     updateSummary();
   </script>
 </body>
