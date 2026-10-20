@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Yijun Liu — OpenAI TTS Lab</title>
+  <style>
+    :root{color-scheme:light dark;--bg:#f7f7f5;--card:#fff;--text:#171717;--muted:#666;--border:#ddd;--accent:#ba0c2f;--soft:#f1f1ef}
+    @media(prefers-color-scheme:dark){:root{--bg:#141414;--card:#1d1d1d;--text:#f3f3f3;--muted:#b3b3b3;--border:#3a3a3a;--accent:#d51b46;--soft:#282828}}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;padding:28px 16px;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}.wrap{width:min(100%,760px);margin:auto}.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:30px;box-shadow:0 10px 30px rgba(0,0,0,.06)}h1{margin:0 0 6px;font-size:clamp(2rem,7vw,2.8rem);letter-spacing:-.03em}.sub{margin:0 0 22px;color:var(--muted);line-height:1.5}.grid{display:grid;gap:18px}.field{display:grid;gap:7px}label{font-size:.92rem;font-weight:650}input[type=text],select,textarea{width:100%;border:1px solid var(--border);border-radius:12px;padding:11px 12px;font:inherit;background:var(--card);color:var(--text)}textarea{min-height:118px;resize:vertical;line-height:1.45}.row{display:grid;grid-template-columns:1fr 1fr;gap:16px}.slider-row{display:grid;gap:6px}input[type=range]{width:100%}.value{color:var(--muted);font-weight:500}.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.primary,.secondary,.download{border-radius:999px;padding:11px 17px;font:inherit;font-weight:650}.primary{border:0;background:var(--accent);color:white;cursor:pointer}.primary:disabled{opacity:.55;cursor:wait}.secondary,.download{border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer;text-decoration:none}.download{display:none}.result{border:1px solid var(--border);border-radius:12px;padding:12px;background:var(--soft);color:var(--muted);font-size:.86rem;line-height:1.45;word-break:break-word}.player{display:none}.player audio{width:100%}.fine{color:var(--muted);font-size:.8rem;line-height:1.45;margin:0}@media(max-width:600px){.row{grid-template-columns:1fr}.card{padding:24px 20px}}
+  </style>
+</head>
+<body>
+<div class="wrap"><main class="card">
+  <h1>OpenAI TTS Lab</h1>
+  <p class="sub">Local test page for OpenAI text-to-speech. The API key stays in the local server environment and is never entered into this page.</p>
+  <div class="grid">
+    <div class="field">
+      <label for="spokenText">Text to speak</label>
+      <input id="spokenText" type="text" value="Yijun Liou" autocomplete="off" spellcheck="false" />
+    </div>
+    <div class="row">
+      <div class="field">
+        <label for="voice">Voice</label>
+        <select id="voice">
+          <option value="marin" selected>marin</option><option value="cedar">cedar</option><option value="alloy">alloy</option><option value="ash">ash</option><option value="ballad">ballad</option><option value="coral">coral</option><option value="echo">echo</option><option value="fable">fable</option><option value="nova">nova</option><option value="onyx">onyx</option><option value="sage">sage</option><option value="shimmer">shimmer</option><option value="verse">verse</option>
+        </select>
+      </div>
+      <div class="slider-row">
+        <label for="speed">Speed <span class="value" id="speedValue">0.85×</span></label>
+        <input id="speed" type="range" min="0.50" max="1.30" step="0.05" value="0.85" />
+      </div>
+    </div>
+    <div class="field">
+      <label for="instructions">Speaking instructions</label>
+      <textarea id="instructions">Use natural American English speech. Read only the name, with a relaxed conversational delivery. Keep the two parts connected and natural rather than exaggerated. Do not add any other words.</textarea>
+      <p class="fine">You can describe accent, stress, rhythm, energy, or vocal character here. OpenAI TTS has no separate pitch parameter, so describe pitch/tone in words if you want to change it.</p>
+    </div>
+    <div class="actions">
+      <button id="generate" class="primary" type="button">Generate &amp; Preview</button>
+      <button id="copy" class="secondary" type="button">Copy settings</button>
+      <a id="download" class="download" download="yijun-liou-openai.wav">Download WAV</a>
+    </div>
+    <div id="status" class="result">Ready. Start the local server, then generate.</div>
+    <div id="playerWrap" class="player"><audio id="player" controls></audio></div>
+  </div>
+</main></div>
+<script>
+const $=id=>document.getElementById(id);const text=$('spokenText'),voice=$('voice'),speed=$('speed'),instructions=$('instructions'),status=$('status'),player=$('player'),playerWrap=$('playerWrap'),download=$('download'),generate=$('generate'),speedValue=$('speedValue');let objectUrl=null;
+function settings(){return `Model: gpt-4o-mini-tts | Text: ${text.value.trim()} | Voice: ${voice.value} | Speed: ${Number(speed.value).toFixed(2)} | Instructions: ${instructions.value.trim()}`}
+speed.addEventListener('input',()=>speedValue.textContent=`${Number(speed.value).toFixed(2)}×`);
+$('copy').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(settings());status.textContent='Settings copied.'}catch{status.textContent=settings()}});
+generate.addEventListener('click',async()=>{const spoken=text.value.trim();if(!spoken){status.textContent='Enter text to speak.';return}generate.disabled=true;status.textContent='Generating with OpenAI…';const started=performance.now();try{const r=await fetch('/api/tts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:spoken,voice:voice.value,speed:Number(speed.value),instructions:instructions.value.trim()})});if(!r.ok){let d=`HTTP ${r.status}`;try{const j=await r.json();d=j.error||d}catch{}throw new Error(d)}const blob=await r.blob();if(objectUrl)URL.revokeObjectURL(objectUrl);objectUrl=URL.createObjectURL(blob);player.src=objectUrl;download.href=objectUrl;playerWrap.style.display='block';download.style.display='inline-block';status.textContent=`Ready in ${((performance.now()-started)/1000).toFixed(1)}s. ${settings()}`;try{await player.play()}catch{}}catch(e){status.textContent=`Generation failed: ${e.message}. Make sure openai-lab-server.mjs is running locally and OPENAI_API_KEY is set.`}finally{generate.disabled=false}});
+window.addEventListener('beforeunload',()=>{if(objectUrl)URL.revokeObjectURL(objectUrl)});
+</script>
+</body>
+</html>
