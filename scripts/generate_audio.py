@@ -3,32 +3,24 @@ import numpy as np
 import soundfile as sf
 from kokoro import KPipeline
 
-OUT_DIR = Path("audio")
-OUT_DIR.mkdir(parents=True, exist_ok=True)
+OUT = Path("audio/yijun-liu.wav")
+OUT.parent.mkdir(parents=True, exist_ok=True)
 
-# Generate two spelling variants so they can be compared directly:
-# 1) "Yijun Leo"
-# 2) "Yi-Jun Leo"
-# The surname is intentionally rendered as the English-friendly approximation "Leo".
-VARIANTS = {
-    "yijun-leo.wav": "Yijun Leo",
-    "yi-jun-leo.wav": "Yi-Jun Leo",
-}
+# Tone-stripped Mandarin segmental pronunciation for pinyin "Yi Jun Liu".
+# Yi  ≈ /i/
+# Jun ≈ /tɕyn/   (pinyin j is /tɕ/; u after j represents ü /y/)
+# Liu ≈ /ljou/   (pinyin -iu is the contracted spelling of -iou)
+# No lexical tone marks are included on purpose.
+PHONEMES = "i tɕyn ljou"
 
-pipeline = KPipeline(lang_code="a")
+# Use a Mandarin Kokoro voice so the Mandarin segments are realized naturally.
+pipeline = KPipeline(lang_code="z")
+voice_pack = pipeline.load_voice("zf_xiaoxiao")
 
-for filename, text in VARIANTS.items():
-    parts = []
-    # Generate somewhat slowly at the model level to keep the voice natural.
-    for result in pipeline(text, voice="af_heart", speed=0.82):
-        if result.audio is not None:
-            audio = result.audio.detach().cpu().numpy() if hasattr(result.audio, "detach") else np.asarray(result.audio)
-            parts.append(audio)
+# Generate slightly slowly at the model level. The webpage can still adjust playback
+# speed, but 1.0x playback is the intended natural baseline for this file.
+result = KPipeline.infer(pipeline.model, PHONEMES, voice_pack, speed=0.88)
+audio = result.audio.detach().cpu().numpy() if hasattr(result.audio, "detach") else np.asarray(result.audio)
 
-    if not parts:
-        raise RuntimeError(f"Kokoro produced no audio for {text}")
-
-    audio = np.concatenate(parts)
-    out = OUT_DIR / filename
-    sf.write(out, audio, 24000)
-    print(f"Wrote {out} ({len(audio)/24000:.2f}s) from: {text}")
+sf.write(OUT, audio, 24000)
+print(f"Wrote {OUT} ({len(audio)/24000:.2f}s) from phonemes: {PHONEMES}")
