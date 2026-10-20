@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Local Qwen3-TTS pronunciation lab for Yijun Liu" />
+  <title>Yijun Liu — Qwen3-TTS Lab</title>
+  <style>
+    :root{color-scheme:light dark;--bg:#f7f7f5;--card:#fff;--text:#171717;--muted:#666;--border:#ddd;--accent:#ba0c2f;--accent2:#9b0a27;--soft:#f1f1ef}
+    @media(prefers-color-scheme:dark){:root{--bg:#141414;--card:#1d1d1d;--text:#f3f3f3;--muted:#b3b3b3;--border:#3a3a3a;--accent:#d51b46;--accent2:#e52b55;--soft:#282828}}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;padding:28px 16px;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}.wrap{width:min(100%,760px);margin:auto}.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:30px;box-shadow:0 10px 30px rgba(0,0,0,.06)}h1{margin:0 0 6px;font-size:clamp(2rem,7vw,2.8rem);letter-spacing:-.03em}.sub{margin:0 0 24px;color:var(--muted);line-height:1.5}.grid{display:grid;gap:18px}.field{display:grid;gap:7px}label{font-size:.92rem;font-weight:650}input[type=text],select,textarea{width:100%;border:1px solid var(--border);border-radius:12px;padding:11px 12px;font:inherit;background:var(--card);color:var(--text)}textarea{min-height:110px;resize:vertical;line-height:1.45}.row{display:grid;grid-template-columns:1fr 1fr;gap:16px}.fine{margin:0;color:var(--muted);font-size:.8rem;line-height:1.45}.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.primary,.secondary,.download{border-radius:999px;padding:11px 17px;font:inherit;font-weight:650}.primary{border:0;background:var(--accent);color:#fff;cursor:pointer}.primary:hover{background:var(--accent2)}.primary:disabled{opacity:.55;cursor:wait}.secondary,.download{border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer;text-decoration:none}.result{border:1px solid var(--border);border-radius:12px;padding:12px;background:var(--soft);color:var(--muted);font-size:.86rem;line-height:1.45;word-break:break-word}.player{display:none}.player audio{width:100%}.slider{display:grid;gap:6px}.value{color:var(--muted);font-weight:500}.badge{display:inline-block;border:1px solid var(--border);border-radius:999px;padding:3px 8px;font-size:.75rem;color:var(--muted)}@media(max-width:600px){.row{grid-template-columns:1fr}.card{padding:24px 20px}}
+  </style>
+</head>
+<body>
+<div class="wrap"><main class="card">
+  <h1>Qwen3-TTS Lab</h1>
+  <p class="sub">Runs Qwen3-TTS locally on your computer. No API key and no cloud TTS call. The first use downloads the selected Qwen model from Hugging Face.</p>
+
+  <div class="grid">
+    <div class="field">
+      <label for="spokenText">Text to speak</label>
+      <input id="spokenText" type="text" value="Yijun Liou" autocomplete="off" spellcheck="false" />
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label for="model">Model</label>
+        <select id="model">
+          <option value="0.6B" selected>Qwen3-TTS 0.6B CustomVoice — faster</option>
+          <option value="1.7B">Qwen3-TTS 1.7B CustomVoice — higher quality</option>
+        </select>
+        <p class="fine">Changing model can trigger another large download and model reload.</p>
+      </div>
+      <div class="field">
+        <label for="speaker">Speaker</label>
+        <select id="speaker">
+          <option value="Aiden" selected>Aiden — sunny American male · native English</option>
+          <option value="Ryan">Ryan — dynamic male · native English</option>
+          <option value="Vivian">Vivian — bright young female</option>
+          <option value="Serena">Serena — warm young female</option>
+          <option value="Uncle_Fu">Uncle Fu — low mellow male</option>
+          <option value="Dylan">Dylan — youthful clear male</option>
+          <option value="Eric">Eric — lively slightly husky male</option>
+          <option value="Ono_Anna">Ono Anna — playful light female</option>
+          <option value="Sohee">Sohee — warm expressive female</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="instructions">Style / pronunciation instruction</label>
+      <textarea id="instructions">Speak in natural American English. Read only the name. Keep the rhythm relaxed and conversational, without exaggerated stress. Pronounce the spelling naturally as written.</textarea>
+      <p class="fine">Qwen's CustomVoice model accepts free-form style instructions. Try changing stress, energy, softness, pace, or vocal character here.</p>
+    </div>
+
+    <div class="slider">
+      <label for="playbackRate">Playback rate <span class="value" id="playbackRateValue">1.00×</span></label>
+      <input id="playbackRate" type="range" min="0.70" max="1.20" step="0.05" value="1.00" />
+      <p class="fine">This changes browser playback only; it does not alter Qwen's generated waveform.</p>
+    </div>
+
+    <div class="actions">
+      <button id="generate" class="primary" type="button">Generate &amp; Preview</button>
+      <button id="copy" class="secondary" type="button">Copy settings</button>
+      <a id="download" class="download" download="yijun-liou-qwen3.wav" style="display:none">Download WAV</a>
+    </div>
+
+    <div id="status" class="result">Checking local Qwen server…</div>
+    <div id="playerWrap" class="player"><audio id="player" controls></audio></div>
+  </div>
+</main></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const text=$('spokenText'),model=$('model'),speaker=$('speaker'),instructions=$('instructions');
+const playbackRate=$('playbackRate'),playbackRateValue=$('playbackRateValue');
+const status=$('status'),player=$('player'),playerWrap=$('playerWrap'),download=$('download'),generate=$('generate');
+let objectUrl=null;
+
+function settings(){
+  return `Model: ${model.value} | Text: ${text.value.trim()} | Speaker: ${speaker.value} | Instruction: ${instructions.value.trim()}`;
+}
+
+playbackRate.addEventListener('input',()=>{
+  const v=Number(playbackRate.value);
+  playbackRateValue.textContent=`${v.toFixed(2)}×`;
+  player.playbackRate=v;
+});
+
+$('copy').addEventListener('click',async()=>{
+  try{await navigator.clipboard.writeText(settings());status.textContent='Settings copied.'}
+  catch{status.textContent=settings()}
+});
+
+async function checkServer(){
+  try{
+    const r=await fetch('/api/status',{cache:'no-store'});
+    if(!r.ok) throw new Error(`HTTP ${r.status}`);
+    const j=await r.json();
+    status.textContent=`Local server ready · device: ${j.device} · loaded model: ${j.loaded_model || 'none yet'}`;
+  }catch(e){
+    status.textContent='Local Qwen server is not running. Start qwen-lab-server.py, then open this page through http://127.0.0.1:8765.';
+  }
+}
+
+generate.addEventListener('click',async()=>{
+  const spoken=text.value.trim();
+  if(!spoken){status.textContent='Enter text to speak.';return}
+  generate.disabled=true;
+  status.textContent=`Loading/generating with Qwen3-TTS ${model.value}… First run can take a while.`;
+  const started=performance.now();
+  try{
+    const r=await fetch('/api/tts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:spoken,model:model.value,speaker:speaker.value,instruct:instructions.value.trim()})});
+    if(!r.ok){let msg=`HTTP ${r.status}`;try{const j=await r.json();msg=j.error||msg}catch{}throw new Error(msg)}
+    const blob=await r.blob();
+    if(objectUrl) URL.revokeObjectURL(objectUrl);
+    objectUrl=URL.createObjectURL(blob);
+    player.src=objectUrl;
+    player.playbackRate=Number(playbackRate.value);
+    playerWrap.style.display='block';
+    download.href=objectUrl;
+    download.style.display='inline-block';
+    status.textContent=`Ready in ${((performance.now()-started)/1000).toFixed(1)}s · ${settings()}`;
+    try{await player.play()}catch{}
+  }catch(e){
+    status.textContent=`Generation failed: ${e.message}`;
+  }finally{generate.disabled=false}
+});
+
+window.addEventListener('beforeunload',()=>{if(objectUrl)URL.revokeObjectURL(objectUrl)});
+checkServer();
+</script>
+</body>
+</html>
