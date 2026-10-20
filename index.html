@@ -41,7 +41,7 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
     .card {
-      width: min(100%, 520px);
+      width: min(100%, 500px);
       padding: 42px 36px;
       border: 1px solid var(--border);
       border-radius: 18px;
@@ -64,34 +64,23 @@
       display: grid;
       gap: 14px;
     }
-    .variant-row {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
     button {
       appearance: none;
       border: 0;
       border-radius: 999px;
-      padding: 12px 18px;
+      padding: 12px 20px;
       background: var(--button);
       color: var(--button-text);
       font: inherit;
       font-weight: 600;
       cursor: pointer;
+      justify-self: center;
     }
     button:hover { background: var(--button-hover); }
-    .secondary {
-      background: transparent;
-      color: var(--text);
-      border: 1px solid var(--border);
-    }
-    .secondary:hover { background: rgba(127,127,127,.08); }
     .speed-wrap {
       display: grid;
       gap: 6px;
-      margin-top: 4px;
+      margin-top: 2px;
     }
     .speed-label {
       color: var(--muted);
@@ -112,57 +101,41 @@
     <p class="pronunciation">Pronounced <strong>ee-June Leo</strong></p>
 
     <div class="controls">
-      <div class="variant-row">
-        <button id="playPlain" type="button">🔊 Yijun Leo</button>
-        <button id="playHyphen" class="secondary" type="button">🔊 Yi-Jun Leo</button>
-      </div>
+      <button id="playButton" type="button">🔊 Hear my name</button>
 
       <div class="speed-wrap">
-        <label class="speed-label" for="speed">Playback speed: <span id="speedValue">0.75×</span></label>
-        <input id="speed" type="range" min="0.60" max="1.10" step="0.05" value="0.75" />
+        <label class="speed-label" for="speed">Playback speed: <span id="speedValue">1.00×</span></label>
+        <input id="speed" type="range" min="0.70" max="1.10" step="0.05" value="1.00" />
       </div>
     </div>
 
-    <audio id="audioPlain" preload="auto" src="audio/yijun-leo.wav"></audio>
-    <audio id="audioHyphen" preload="auto" src="audio/yi-jun-leo.wav"></audio>
+    <audio id="nameAudio" preload="auto" src="audio/yijun-liu.wav"></audio>
 
-    <p class="note">Both versions use the same AI voice. Audio is generated slowly at the model level, and playback speed can be adjusted without changing pitch.</p>
+    <p class="note">Generated from tone-stripped Mandarin phonemes, with the recording itself produced slightly slower for clarity.</p>
   </main>
 
   <script>
-    const plain = document.getElementById('audioPlain');
-    const hyphen = document.getElementById('audioHyphen');
+    const audio = document.getElementById('nameAudio');
     const speed = document.getElementById('speed');
     const speedValue = document.getElementById('speedValue');
 
-    for (const audio of [plain, hyphen]) {
-      audio.preservesPitch = true;
-      audio.mozPreservesPitch = true;
-      audio.webkitPreservesPitch = true;
-    }
+    audio.preservesPitch = true;
+    audio.mozPreservesPitch = true;
+    audio.webkitPreservesPitch = true;
 
     function applySpeed() {
       const rate = Number(speed.value);
-      plain.playbackRate = rate;
-      hyphen.playbackRate = rate;
-      speedValue.textContent = rate.toFixed(2).replace(/0$/, '') + '×';
-    }
-
-    function play(audio) {
-      for (const other of [plain, hyphen]) {
-        if (other !== audio) {
-          other.pause();
-          other.currentTime = 0;
-        }
-      }
-      audio.currentTime = 0;
-      applySpeed();
-      audio.play();
+      audio.playbackRate = rate;
+      speedValue.textContent = rate.toFixed(2) + '×';
     }
 
     speed.addEventListener('input', applySpeed);
-    document.getElementById('playPlain').addEventListener('click', () => play(plain));
-    document.getElementById('playHyphen').addEventListener('click', () => play(hyphen));
+    document.getElementById('playButton').addEventListener('click', () => {
+      audio.currentTime = 0;
+      applySpeed();
+      audio.play();
+    });
+
     applySpeed();
   </script>
 </body>
