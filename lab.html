@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Interactive pronunciation lab for Yijun Liu" />
+  <title>Yijun Liu — Pronunciation Lab</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f7f7f5;
+      --card: #ffffff;
+      --text: #171717;
+      --muted: #666666;
+      --border: #ddddda;
+      --button: #ba0c2f;
+      --button-hover: #9b0a27;
+      --button-text: #ffffff;
+      --soft: #f1f1ef;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #141414;
+        --card: #1d1d1d;
+        --text: #f3f3f3;
+        --muted: #b3b3b3;
+        --border: #3a3a3a;
+        --button: #d51b46;
+        --button-hover: #e52b55;
+        --button-text: #ffffff;
+        --soft: #282828;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 28px 16px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .wrap { width: min(100%, 680px); margin: 0 auto; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.06);
+    }
+    h1 { margin: 0 0 6px; font-size: clamp(2rem, 7vw, 2.8rem); letter-spacing: -.03em; }
+    .sub { margin: 0 0 26px; color: var(--muted); line-height: 1.5; }
+    .grid { display: grid; gap: 18px; }
+    .field { display: grid; gap: 7px; }
+    label { font-size: .92rem; font-weight: 600; }
+    input[type="text"], select {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 11px 12px;
+      font: inherit;
+      background: var(--card);
+      color: var(--text);
+    }
+    .presets { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      border: 1px solid var(--border);
+      background: var(--soft);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font: inherit;
+      cursor: pointer;
+    }
+    .sliders { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .slider-row { display: grid; gap: 6px; }
+    input[type="range"] { width: 100%; }
+    .value { color: var(--muted); font-weight: 500; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .primary, .secondary {
+      border-radius: 999px;
+      padding: 11px 17px;
+      font: inherit;
+      font-weight: 650;
+      cursor: pointer;
+    }
+    .primary { border: 0; background: var(--button); color: var(--button-text); }
+    .primary:hover { background: var(--button-hover); }
+    .secondary { border: 1px solid var(--border); background: transparent; color: var(--text); }
+    .toggle { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); font-size: .9rem; }
+    .result {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      background: var(--soft);
+      color: var(--muted);
+      font-size: .86rem;
+      line-height: 1.45;
+      word-break: break-word;
+    }
+    .reference {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+    audio { width: 100%; margin-top: 8px; }
+    .note { margin: 8px 0 0; color: var(--muted); font-size: .82rem; line-height: 1.45; }
+    @media (max-width: 560px) { .sliders { grid-template-columns: 1fr; } .card { padding: 24px 20px; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <main class="card">
+      <h1>Pronunciation Lab</h1>
+      <p class="sub">Use an American English voice on your own device and tune the spelling, speed, and pitch instantly. This page is only for testing; it does not change the public pronunciation automatically.</p>
+
+      <div class="grid">
+        <div class="field">
+          <label for="spokenText">What the American voice should read</label>
+          <input id="spokenText" type="text" value="E JUNE Leo" autocomplete="off" spellcheck="false" />
+          <div class="presets">
+            <button class="chip" type="button" data-text="E JUNE Leo">E JUNE Leo</button>
+            <button class="chip" type="button" data-text="EE JUNE Leo">EE JUNE Leo</button>
+            <button class="chip" type="button" data-text="E June Leo">E June Leo</button>
+            <button class="chip" type="button" data-text="Yi JUNE Leo">Yi JUNE Leo</button>
+            <button class="chip" type="button" data-text="Yee JUNE Leo">Yee JUNE Leo</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="voice">Voice</label>
+          <select id="voice"></select>
+        </div>
+
+        <div class="sliders">
+          <div class="slider-row">
+            <label for="rate">Speed <span class="value" id="rateValue">0.85×</span></label>
+            <input id="rate" type="range" min="0.60" max="1.20" step="0.05" value="0.85" />
+          </div>
+          <div class="slider-row">
+            <label for="pitch">Pitch <span class="value" id="pitchValue">1.00</span></label>
+            <input id="pitch" type="range" min="0.70" max="1.30" step="0.05" value="1.00" />
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="speak" class="primary" type="button">🔊 Preview</button>
+          <button id="stop" class="secondary" type="button">Stop</button>
+          <button id="copy" class="secondary" type="button">Copy settings</button>
+          <label class="toggle"><input id="auto" type="checkbox" /> Auto preview</label>
+        </div>
+
+        <div id="summary" class="result"></div>
+      </div>
+
+      <div class="reference">
+        <label>Current fixed AI recording for comparison</label>
+        <audio controls preload="metadata" src="audio/yijun-liu.wav"></audio>
+        <p class="note">The live preview above uses your browser/OS speech engine, so it responds immediately. Once you find a version you like, copy the settings and send them back to me; I can use that as the target for the fixed recording.</p>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const text = document.getElementById('spokenText');
+    const voiceSelect = document.getElementById('voice');
+    const rate = document.getElementById('rate');
+    const pitch = document.getElementById('pitch');
+    const rateValue = document.getElementById('rateValue');
+    const pitchValue = document.getElementById('pitchValue');
+    const auto = document.getElementById('auto');
+    const summary = document.getElementById('summary');
+    let voices = [];
+    let timer = null;
+
+    function loadVoices() {
+      const all = speechSynthesis.getVoices();
+      voices = all.sort((a, b) => {
+        const aUS = a.lang.toLowerCase() === 'en-us' ? 0 : 1;
+        const bUS = b.lang.toLowerCase() === 'en-us' ? 0 : 1;
+        if (aUS !== bUS) return aUS - bUS;
+        const aEN = a.lang.toLowerCase().startsWith('en') ? 0 : 1;
+        const bEN = b.lang.toLowerCase().startsWith('en') ? 0 : 1;
+        if (aEN !== bEN) return aEN - bEN;
+        return a.name.localeCompare(b.name);
+      });
+
+      const previous = voiceSelect.value;
+      voiceSelect.innerHTML = '';
+      voices.forEach((v, i) => {
+        const option = document.createElement('option');
+        option.value = String(i);
+        option.textContent = `${v.name} — ${v.lang}${v.default ? ' (default)' : ''}`;
+        voiceSelect.appendChild(option);
+      });
+
+      const preferredIndex = voices.findIndex(v => v.lang.toLowerCase() === 'en-us' && /Microsoft|Samantha|Google|English/i.test(v.name));
+      if (previous && voices[Number(previous)]) voiceSelect.value = previous;
+      else if (preferredIndex >= 0) voiceSelect.value = String(preferredIndex);
+      else if (voices.length) voiceSelect.value = '0';
+      updateSummary();
+    }
+
+    function selectedVoice() {
+      return voices[Number(voiceSelect.value)] || null;
+    }
+
+    function updateSummary() {
+      rateValue.textContent = `${Number(rate.value).toFixed(2)}×`;
+      pitchValue.textContent = Number(pitch.value).toFixed(2);
+      const v = selectedVoice();
+      summary.textContent = `Text: ${text.value} | Voice: ${v ? `${v.name} (${v.lang})` : 'default'} | Speed: ${rate.value} | Pitch: ${pitch.value}`;
+    }
+
+    function speak() {
+      if (!('speechSynthesis' in window)) {
+        summary.textContent = 'Speech synthesis is not available in this browser.';
+        return;
+      }
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text.value.trim());
+      const v = selectedVoice();
+      if (v) u.voice = v;
+      u.lang = v?.lang || 'en-US';
+      u.rate = Number(rate.value);
+      u.pitch = Number(pitch.value);
+      u.volume = 1;
+      speechSynthesis.speak(u);
+      updateSummary();
+    }
+
+    function maybeAuto() {
+      updateSummary();
+      if (!auto.checked) return;
+      clearTimeout(timer);
+      timer = setTimeout(speak, 350);
+    }
+
+    document.getElementById('speak').addEventListener('click', speak);
+    document.getElementById('stop').addEventListener('click', () => speechSynthesis.cancel());
+    document.getElementById('copy').addEventListener('click', async () => {
+      updateSummary();
+      try {
+        await navigator.clipboard.writeText(summary.textContent);
+        const old = document.getElementById('copy').textContent;
+        document.getElementById('copy').textContent = 'Copied';
+        setTimeout(() => document.getElementById('copy').textContent = old, 1000);
+      } catch (_) {}
+    });
+
+    document.querySelectorAll('.chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        text.value = btn.dataset.text;
+        maybeAuto();
+      });
+    });
+
+    for (const el of [text, voiceSelect, rate, pitch]) {
+      el.addEventListener(el === text ? 'input' : 'change', maybeAuto);
+      if (el === rate || el === pitch) el.addEventListener('input', maybeAuto);
+    }
+
+    auto.addEventListener('change', () => { if (auto.checked) speak(); });
+    speechSynthesis.onvoiceschanged = loadVoices;
+    loadVoices();
+    updateSummary();
+  </script>
+</body>
+</html>
