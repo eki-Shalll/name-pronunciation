@@ -17,7 +17,6 @@
       --button-hover: #9b0a27;
       --button-text: #ffffff;
     }
-
     @media (prefers-color-scheme: dark) {
       :root {
         --bg: #141414;
@@ -30,9 +29,7 @@
         --button-text: #ffffff;
       }
     }
-
     * { box-sizing: border-box; }
-
     body {
       margin: 0;
       min-height: 100vh;
@@ -43,111 +40,130 @@
       color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
-
     .card {
-      width: min(100%, 460px);
+      width: min(100%, 520px);
       padding: 42px 36px;
       border: 1px solid var(--border);
       border-radius: 18px;
       background: var(--card);
       text-align: center;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+      box-shadow: 0 10px 30px rgba(0,0,0,.06);
     }
-
     h1 {
       margin: 0 0 8px;
       font-size: clamp(2rem, 7vw, 3rem);
       font-weight: 700;
       letter-spacing: -0.03em;
     }
-
     .pronunciation {
-      margin: 0 0 28px;
+      margin: 0 0 26px;
       color: var(--muted);
       font-size: 1rem;
     }
-
+    .controls {
+      display: grid;
+      gap: 14px;
+    }
+    .variant-row {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
     button {
       appearance: none;
       border: 0;
       border-radius: 999px;
-      padding: 12px 20px;
+      padding: 12px 18px;
       background: var(--button);
       color: var(--button-text);
       font: inherit;
       font-weight: 600;
       cursor: pointer;
-      transition: transform 120ms ease, background 120ms ease;
     }
-
     button:hover { background: var(--button-hover); }
-    button:active { transform: scale(0.98); }
-
-    button:focus-visible {
-      outline: 3px solid rgba(186, 12, 47, 0.28);
-      outline-offset: 3px;
+    .secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
     }
-
-    .fallback {
-      display: none;
-      margin-top: 18px;
+    .secondary:hover { background: rgba(127,127,127,.08); }
+    .speed-wrap {
+      display: grid;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .speed-label {
       color: var(--muted);
-      font-size: 0.9rem;
+      font-size: .9rem;
+    }
+    input[type="range"] { width: 100%; }
+    .note {
+      margin: 16px 0 0;
+      color: var(--muted);
+      font-size: .82rem;
+      line-height: 1.45;
     }
   </style>
 </head>
 <body>
   <main class="card" aria-labelledby="name">
     <h1 id="name">Yijun Liu</h1>
-    <p class="pronunciation">Pronounced <strong>ee-June lyoh</strong></p>
+    <p class="pronunciation">Pronounced <strong>ee-June Leo</strong></p>
 
-    <button id="playButton" type="button" aria-label="Hear Yijun Liu's name pronounced">
-      🔊 Hear my name
-    </button>
+    <div class="controls">
+      <div class="variant-row">
+        <button id="playPlain" type="button">🔊 Yijun Leo</button>
+        <button id="playHyphen" class="secondary" type="button">🔊 Yi-Jun Leo</button>
+      </div>
 
-    <audio id="nameAudio" preload="auto" src="audio/yijun-liu.wav"></audio>
-    <p id="fallback" class="fallback">Using your browser's built-in voice because the recorded pronunciation is unavailable.</p>
+      <div class="speed-wrap">
+        <label class="speed-label" for="speed">Playback speed: <span id="speedValue">0.75×</span></label>
+        <input id="speed" type="range" min="0.60" max="1.10" step="0.05" value="0.75" />
+      </div>
+    </div>
+
+    <audio id="audioPlain" preload="auto" src="audio/yijun-leo.wav"></audio>
+    <audio id="audioHyphen" preload="auto" src="audio/yi-jun-leo.wav"></audio>
+
+    <p class="note">Both versions use the same AI voice. Audio is generated slowly at the model level, and playback speed can be adjusted without changing pitch.</p>
   </main>
 
   <script>
-    const button = document.getElementById("playButton");
-    const audio = document.getElementById("nameAudio");
-    const fallback = document.getElementById("fallback");
+    const plain = document.getElementById('audioPlain');
+    const hyphen = document.getElementById('audioHyphen');
+    const speed = document.getElementById('speed');
+    const speedValue = document.getElementById('speedValue');
 
-    function speakFallback() {
-      if (!("speechSynthesis" in window)) {
-        fallback.textContent = "Audio playback is unavailable in this browser.";
-        fallback.style.display = "block";
-        return;
-      }
-
-      fallback.style.display = "block";
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance("E June lyoh");
-      utterance.lang = "en-US";
-      utterance.rate = 0.82;
-      utterance.pitch = 1.0;
-      window.speechSynthesis.speak(utterance);
+    for (const audio of [plain, hyphen]) {
+      audio.preservesPitch = true;
+      audio.mozPreservesPitch = true;
+      audio.webkitPreservesPitch = true;
     }
 
-    async function playName() {
-      fallback.style.display = "none";
-      try {
-        audio.currentTime = 0;
-        await audio.play();
-      } catch (e) {
-        speakFallback();
-      }
+    function applySpeed() {
+      const rate = Number(speed.value);
+      plain.playbackRate = rate;
+      hyphen.playbackRate = rate;
+      speedValue.textContent = rate.toFixed(2).replace(/0$/, '') + '×';
     }
 
-    audio.addEventListener("error", () => {
-      audio.dataset.failed = "true";
-    });
+    function play(audio) {
+      for (const other of [plain, hyphen]) {
+        if (other !== audio) {
+          other.pause();
+          other.currentTime = 0;
+        }
+      }
+      audio.currentTime = 0;
+      applySpeed();
+      audio.play();
+    }
 
-    button.addEventListener("click", () => {
-      if (audio.dataset.failed === "true") speakFallback();
-      else playName();
-    });
+    speed.addEventListener('input', applySpeed);
+    document.getElementById('playPlain').addEventListener('click', () => play(plain));
+    document.getElementById('playHyphen').addEventListener('click', () => play(hyphen));
+    applySpeed();
   </script>
 </body>
 </html>
